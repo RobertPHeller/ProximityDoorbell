@@ -72,6 +72,9 @@ demangled.txt
 *.ndlst
 *.stripped
 objcopy.params
+# temp dirs
+BUILD/*
+CACHE/*
 
 # files that are local to the build environment
 set250k.c
@@ -80,6 +83,3 @@ openmrnpath.mk
 
 #Mac OS X file system artifacts
 .DS_Store
-# temp dirs
-BUILD/*
-CACHE/*

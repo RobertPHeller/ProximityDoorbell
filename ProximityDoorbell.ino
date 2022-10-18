@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 12:31:42 2022
-//  Last Modified : <221017.1555>
+//  Last Modified : <221018.1655>
 //
 //  Description	
 //
@@ -138,7 +138,7 @@ bool CheckProx()
 const char *RandomTrack()
 {
     static char buffer[128];
-    unsigned tracknum = (unsigned) (rand()*74) + 1;
+    unsigned tracknum = (unsigned) ((rand()/(double)RAND_MAX)*74) + 1;
     snprintf(buffer,sizeof(buffer),"/Track%02u.wav",tracknum);
     return buffer;
 }

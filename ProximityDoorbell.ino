@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 12:31:42 2022
-//  Last Modified : <221026.0948>
+//  Last Modified : <221026.1140>
 //
 //  Description	
 //
@@ -64,6 +64,8 @@ AudioGeneratorWAV generator;
 //AudioOutputDAC amplifier;
 AudioOutputI2S amplifier(0,AudioOutputI2S::INTERNAL_DAC);
 
+
+#ifdef USE_SR04
 // SR04 Data pins
 const int TRIG_PIN = 2;
 const int ECHO_PIN = 4;
@@ -78,16 +80,26 @@ const float VERY_FAR_INCHES = 15.0;
 const float DISTANT_INCHES  = 30.0;
 
 bool IsClose = false;
-
+#else
 Button b4(4);
+
+const int READY_LED = 2;
+#endif
 
 void setup() {
     Serial.begin(115200);
+#ifdef USE_SR04
     // The Trigger pin will tell the sensor to range find
-    //pinMode(TRIG_PIN, OUTPUT);
-    //pinMode(ECHO_PIN, INPUT);
-    //digitalWrite(TRIG_PIN, LOW);
+    pinMode(TRIG_PIN, OUTPUT);
+    pinMode(ECHO_PIN, INPUT);
+    digitalWrite(TRIG_PIN, LOW);
+#else
     b4.begin();
+    pinMode(READY_LED, OUTPUT);
+    digitalWrite(READY_LED,HIGH);
+#endif
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
     // Init DAC
     //amplifier.init();
     //Serial.println("amplifier init'ed");
@@ -96,6 +108,7 @@ void setup() {
     Serial.println("SD mounted");
 }
 
+#ifdef USE_SR04
 // Check for change in proximity
 bool CheckProx()
 {
@@ -147,6 +160,7 @@ bool CheckProx()
     // Nothing to see here (no change).
     return false;
 }
+#endif
 
 // Choose a random track.
 const char *RandomTrack()
@@ -167,17 +181,26 @@ void loop() {
         {
             generator.stop();
             if (sdFile.isOpen()) sdFile.close();
+            digitalWrite(LED_BUILTIN,LOW);
         }
     }
     else
     {
         // Otherwise looser loop checking distance.
-        //if (CheckProx())
+#ifdef USE_SR04
+        if (CheckProx())
+#else
+        digitalWrite(READY_LED,HIGH);
         if (b4.pressed())
+#endif
         {
+#ifndef USE_SR04
             while (!b4.released());
+            digitalWrite(READY_LED,LOW);
+#endif
             sdFile.open(RandomTrack());
             generator.begin(&sdFile, &amplifier);
+            digitalWrite(LED_BUILTIN,HIGH);
         }
         else
         {

@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 12:31:42 2022
-//  Last Modified : <221018.1655>
+//  Last Modified : <221026.0948>
 //
 //  Description	
 //
@@ -49,17 +49,20 @@ static const char rcsid[] = "@(#) : $Id$";
 
 #include <WiFi.h>
 #include "SPIFFS.h"
+#include <Button.h>
 
 #include "AudioFileSourceSD.h"
 #include "AudioGeneratorWAV.h"
 #include "AudioOutputDAC.h"
+#include "AudioOutputI2S.h"
 
 // Audio from uSD.
 AudioFileSourceSD sdFile;
 // WAVE files.
 AudioGeneratorWAV generator;
 // Out to DAC.
-AudioOutputDAC amplifier;
+//AudioOutputDAC amplifier;
+AudioOutputI2S amplifier(0,AudioOutputI2S::INTERNAL_DAC);
 
 // SR04 Data pins
 const int TRIG_PIN = 2;
@@ -76,16 +79,21 @@ const float DISTANT_INCHES  = 30.0;
 
 bool IsClose = false;
 
+Button b4(4);
+
 void setup() {
     Serial.begin(115200);
     // The Trigger pin will tell the sensor to range find
-    pinMode(TRIG_PIN, OUTPUT);
-    pinMode(ECHO_PIN, INPUT);
-    digitalWrite(TRIG_PIN, LOW);
+    //pinMode(TRIG_PIN, OUTPUT);
+    //pinMode(ECHO_PIN, INPUT);
+    //digitalWrite(TRIG_PIN, LOW);
+    b4.begin();
     // Init DAC
-    amplifier.init();
+    //amplifier.init();
+    //Serial.println("amplifier init'ed");
     // Init (mount) uSD
     SD.begin();
+    Serial.println("SD mounted");
 }
 
 // Check for change in proximity
@@ -97,27 +105,33 @@ bool CheckProx()
     float cm;
     float inches;
     
+    Serial.println("*** CheckProx()");
     // Hold the trigger pin high for at least 10 us
     digitalWrite(TRIG_PIN, HIGH);
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW);
     
     // Wait for pulse on echo pin
-    while ( digitalRead(ECHO_PIN) == 0 );
+    while ( digitalRead(ECHO_PIN) == 0 )
+    {
+    }
     
     // Measure how long the echo pin was held high (pulse width)
     // Note: the micros() counter will overflow after ~70 min
     t1 = micros();
-    while ( digitalRead(ECHO_PIN) == 1);
+    while ( digitalRead(ECHO_PIN) == 1)
+    {
+        if (micros()-t1 > MAX_DIST) break;
+    }
     t2 = micros();
     pulse_width = t2 - t1;
-    //Serial.print("*** pulse_width = ");Serial.println(pulse_width);
+    Serial.print("*** pulse_width = ");Serial.println(pulse_width);
     // Calculate distance in centimeters and inches. The constants
     // are found in the datasheet, and calculated from the assumed speed 
     //of sound in air at sea level (~340 m/s).
     inches = pulse_width / 148.0;
     
-    //Serial.print("*** inch = ");Serial.println(inches);
+    Serial.print("*** inch = ");Serial.println(inches);
     // If was close, have moved away?
     if (IsClose && inches > FAR_INCHES)
     {
@@ -140,6 +154,7 @@ const char *RandomTrack()
     static char buffer[128];
     unsigned tracknum = (unsigned) ((rand()/(double)RAND_MAX)*74) + 1;
     snprintf(buffer,sizeof(buffer),"/Track%02u.wav",tracknum);
+    Serial.println(buffer);
     return buffer;
 }
         
@@ -157,8 +172,10 @@ void loop() {
     else
     {
         // Otherwise looser loop checking distance.
-        if (CheckProx())
+        //if (CheckProx())
+        if (b4.pressed())
         {
+            while (!b4.released());
             sdFile.open(RandomTrack());
             generator.begin(&sdFile, &amplifier);
         }

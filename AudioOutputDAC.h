@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 13:06:33 2022
-//  Last Modified : <221017.1500>
+//  Last Modified : <221026.0857>
 //
 //  Description	
 //
@@ -50,7 +50,7 @@
 class AudioOutputDAC : public AudioOutput
 {
 public:
-    AudioOutputDAC() {}
+    AudioOutputDAC() : micros_(1000000/44100) {}
     virtual ~AudioOutputDAC() {};
     virtual bool begin() {return true;}
     // Initialize the analog output channel.
@@ -85,14 +85,21 @@ public:
             Serial.print("dac_output_voltage failed: ");
             Serial.println(err);
             return false;
-        } else {
-            return true;
         }
+        delayMicroseconds(micros_);
+        return true;
     }
     // We can stop anytime you like.
     virtual bool stop() {
         return true;
     }
+    virtual bool SetRate(int hz)
+    {
+        micros_ = 1000000 / hz;
+        return true;
+    }
+private:
+    uint32_t micros_;
 };
 
 #endif // __AUDIOOUTPUTDAC_H

@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 12:31:42 2022
-//  Last Modified : <231023.1544>
+//  Last Modified : <241021.1745>
 //
 //  Description	
 //
@@ -96,10 +96,10 @@ void setup() {
 #else
     b4.begin();
     pinMode(READY_LED, OUTPUT);
-    digitalWrite(READY_LED,HIGH);
+    digitalWrite(READY_LED,LOW);
 #endif
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
     // Init DAC
     //amplifier.init();
     //Serial.println("amplifier init'ed");
@@ -182,6 +182,7 @@ void loop() {
             generator.stop();
             if (sdFile.isOpen()) sdFile.close();
             digitalWrite(LED_BUILTIN,HIGH);
+            digitalWrite(READY_LED,LOW);
         }
     }
     else
@@ -190,17 +191,18 @@ void loop() {
 #ifdef USE_SR04
         if (CheckProx())
 #else
-        digitalWrite(READY_LED,HIGH);
+        //digitalWrite(READY_LED,HIGH);
         if (b4.pressed())
 #endif
         {
 #ifndef USE_SR04
             while (!b4.released());
-            digitalWrite(READY_LED,HIGH);
+            //digitalWrite(READY_LED,HIGH);
 #endif
             sdFile.open(RandomTrack());
             generator.begin(&sdFile, &amplifier);
             digitalWrite(LED_BUILTIN,LOW);
+            digitalWrite(READY_LED,HIGH);
         }
         else
         {

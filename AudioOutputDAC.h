@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 13:06:33 2022
-//  Last Modified : <221026.0857>
+//  Last Modified : <241021.1735>
 //
 //  Description	
 //
@@ -56,7 +56,7 @@ public:
     // Initialize the analog output channel.
     esp_err_t init()
     {
-        esp_err_t err = dac_output_enable(DAC_CHANNEL_1);
+        esp_err_t err = dac_output_enable(DAC_CHAN_0);
         if (err != ESP_OK) {
             Serial.print("dac_output_enable failed: ");
             Serial.println(err);
@@ -79,7 +79,7 @@ public:
         }
         uint16_t sample = mono;
         // Shift down to 12 bits and send to DAC.
-        esp_err_t err = dac_output_voltage(DAC_CHANNEL_1,sample>>4);
+        esp_err_t err = dac_output_voltage(DAC_CHAN_0,sample>>4);
         // Error check.
         if (err != ESP_OK) {
             Serial.print("dac_output_voltage failed: ");

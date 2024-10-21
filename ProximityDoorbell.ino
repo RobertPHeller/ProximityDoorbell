@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Mon Oct 17 12:31:42 2022
-//  Last Modified : <221026.1140>
+//  Last Modified : <231023.1544>
 //
 //  Description	
 //
@@ -181,7 +181,7 @@ void loop() {
         {
             generator.stop();
             if (sdFile.isOpen()) sdFile.close();
-            digitalWrite(LED_BUILTIN,LOW);
+            digitalWrite(LED_BUILTIN,HIGH);
         }
     }
     else
@@ -196,11 +196,11 @@ void loop() {
         {
 #ifndef USE_SR04
             while (!b4.released());
-            digitalWrite(READY_LED,LOW);
+            digitalWrite(READY_LED,HIGH);
 #endif
             sdFile.open(RandomTrack());
             generator.begin(&sdFile, &amplifier);
-            digitalWrite(LED_BUILTIN,HIGH);
+            digitalWrite(LED_BUILTIN,LOW);
         }
         else
         {
